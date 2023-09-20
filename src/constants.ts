@@ -10,5 +10,13 @@ export const MAP_SIZE = {
 export const BLOCK_TYPE = {
     EMPTY: 0,
     WALL: 1,
-    PLAYER: 255,
+    START: 2,
+    END: 3,
 } as const;
+
+export const BLOCK_TYPE_COLOR = {
+    0: "transparent",
+    1: "red",
+    2: "green",
+    3: "blue",
+};

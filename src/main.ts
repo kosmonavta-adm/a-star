@@ -1,8 +1,10 @@
-import { Application, Graphics, Container, FederatedPointerEvent } from "pixi.js";
+import { Application, Graphics, Container, FederatedPointerEvent, BitmapFont, BitmapText } from "pixi.js";
 
-import { BLOCK_SIZE, BLOCK_TYPE, MAP_SIZE } from "./constants";
+import { BLOCK_SIZE, BLOCK_TYPE, BLOCK_TYPE_COLOR, MAP_SIZE } from "./constants";
 import { convertToArrayIndex, convertToCoordinate } from "./utils";
 import { ArrayCoordinates, BlockType, Coordinates, GameMap } from "./types";
+
+let currentBlock: BlockType = BLOCK_TYPE.WALL;
 
 function drawGrid() {
     const container = new Container();
@@ -47,7 +49,7 @@ function drawBlock(e: FederatedPointerEvent, blockType: BlockType, map: GameMap)
     if (map[arrayCoordinates.x][arrayCoordinates.y] === blockType) return null;
 
     map[arrayCoordinates.x][arrayCoordinates.y] = blockType;
-    block.beginFill("red");
+    block.beginFill(BLOCK_TYPE_COLOR[blockType]);
     block.drawRect(
         convertToCoordinate(arrayCoordinates.x),
         convertToCoordinate(arrayCoordinates.y),
@@ -67,6 +69,63 @@ function createMap(): GameMap {
     return map;
 }
 
+function drawGui() {
+    const menuLayer = new Container();
+
+    const menu = new Graphics();
+    const menuItem = new Graphics();
+
+    menu.beginFill("black", 0.8);
+    menu.drawRoundedRect(32, window.innerHeight - 32 - 150, 200, 150, 5);
+
+    menuItem.beginFill("green");
+    menuItem.drawRect(64, window.innerHeight - 150 - 32 + 16, BLOCK_SIZE, BLOCK_SIZE);
+    menuItem.beginFill("blue");
+    menuItem.drawRect(64, window.innerHeight - 150 - 32 + 16 + 32, BLOCK_SIZE, BLOCK_SIZE);
+    menuItem.beginFill("red");
+    menuItem.drawRect(64, window.innerHeight - 150 - 32 + 16 + 32 + 32, BLOCK_SIZE, BLOCK_SIZE);
+
+    menuLayer.addChild(menu);
+    menuLayer.addChild(menuItem);
+
+    BitmapFont.from("Courier New", {
+        fill: "#fff",
+        fontSize: 18,
+    });
+
+    const start = new BitmapText("Start", { fontName: "Courier New" });
+    start.x = 64 + 16 + 16;
+    start.y = window.innerHeight - 150 - 32 + 16;
+    const end = new BitmapText("End", { fontName: "Courier New" });
+    end.x = 64 + 16 + 16;
+    end.y = window.innerHeight - 150 - 32 + 16 + 32;
+    const wall = new BitmapText("Wall", { fontName: "Courier New" });
+    wall.x = 64 + 16 + 16;
+    wall.y = window.innerHeight - 150 - 32 + 16 + 32 + 32;
+
+    start.eventMode = "static";
+    start.cursor = "pointer";
+    start.addEventListener("pointerdown", () => {
+        currentBlock = BLOCK_TYPE.START;
+    });
+    end.eventMode = "static";
+    end.cursor = "pointer";
+    end.addEventListener("pointerdown", () => {
+        currentBlock = BLOCK_TYPE.END;
+    });
+    wall.eventMode = "static";
+    wall.cursor = "pointer";
+    wall.addEventListener("pointerdown", () => {
+        currentBlock = BLOCK_TYPE.WALL;
+    });
+
+    menuLayer.addChild(start);
+    menuLayer.addChild(end);
+    menuLayer.addChild(wall);
+
+    return menuLayer;
+}
+
 function init() {
     const map = createMap();
 
@@ -78,17 +137,20 @@ function init() {
     const container = new Container();
 
     const grid = drawGrid();
+    const gui = drawGui();
 
     app.stage.addChild(container);
+    app.stage.addChild(gui);
     container.addChild(grid);
 
-    app.stage.eventMode = "static";
-    app.stage.hitArea = app.screen;
+    container.eventMode = "static";
+    container.hitArea = app.screen;
+
     let isPointerDown = false;
 
-    app.stage.addEventListener("pointerdown", (e) => {
+    container.addEventListener("pointerdown", (e) => {
         isPointerDown = true;
-        const block = drawBlock(e, BLOCK_TYPE.WALL, map);
+        const block = drawBlock(e, currentBlock, map);
         const isBlockNull = block === null;
 
         if (isBlockNull) return;
@@ -96,9 +158,9 @@ function init() {
         container.addChild(block);
     });
 
-    app.stage.addEventListener("pointermove", (e) => {
+    container.addEventListener("pointermove", (e) => {
         if (isPointerDown) {
-            const block = drawBlock(e, BLOCK_TYPE.WALL, map);
+            const block = drawBlock(e, currentBlock, map);
             const isBlockNull = block === null;
 
             if (isBlockNull) return;
@@ -107,7 +169,7 @@ function init() {
         }
     });
 
-    app.stage.addEventListener("pointerup", () => {
+    container.addEventListener("pointerup", () => {
         isPointerDown = false;
     });
 
