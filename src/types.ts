@@ -1,6 +1,7 @@
 import { BLOCK_TYPE } from "./constants";
+import { NodeElement } from "./node";
 
-export type GameMap = BlockType[][];
+export type GameMap = NodeElement[][];
 
 // export type BlockType = typeof BLOCK_TYPE;
 
