@@ -8,3 +8,72 @@ html,
 body {
     display: flex;
 }
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    padding: 16px;
+    bottom: 128px;
+    left: 64px;
+    background-color: #ffffff;
+    gap: 16px;
+}
+
+.menu--hidden {
+    pointer-events: none;
+    opacity: 0;
+    scale: 0;
+}
+
+.menu-button {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    background-color: red;
+    bottom: 64px;
+    left: 64px;
+}
+
+.label {
+    cursor: pointer;
+}
+
+.radio-input {
+    display: none;
+}
+
+.radio-wrapper {
+    display: flex;
+    width: 120px;
+    gap: 6px;
+}
+
+.radio-input:checked ~ .block {
+    border: 2px solid red;
+}
+
+.radio-input:checked ~ .label {
+    font-weight: 700;
+}
+
+.block {
+    width: 16px;
+    height: 16px;
+}
+
+.start-position {
+    background-color: #2ecc40;
+}
+
+.end-position {
+    background-color: #001f3f;
+}
+
+.wall {
+    background-color: #424242;
+}
+
+.eraser {
+    background-color: #1099bb;
+}

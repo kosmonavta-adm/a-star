@@ -3,8 +3,6 @@ import { NodeElement } from "./node";
 
 export type GameMap = NodeElement[][];
 
-// export type BlockType = typeof BLOCK_TYPE;
-
 export type BlockType = (typeof BLOCK_TYPE)[keyof typeof BLOCK_TYPE];
 
 export interface Coordinates {

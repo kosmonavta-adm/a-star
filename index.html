@@ -7,6 +7,31 @@
         <link rel="stylesheet" href="/src/styles.css" />
     </head>
     <body>
+        <button class="menu-button"></button>
+        <div class="menu">
+            <div class="radio-wrapper">
+                <input class="radio-input" type="radio" name="blockType" id="startPosition" value="START" />
+                <div class="block start-position"></div>
+                <label class="label" for="startPosition">Start position</label>
+            </div>
+            <div class="radio-wrapper">
+                <input class="radio-input" type="radio" name="blockType" id="endPosition" value="END" />
+                <div class="block end-position"></div>
+                <label class="label" for="endPosition">End position</label>
+            </div>
+            <div class="radio-wrapper">
+                <input class="radio-input" type="radio" name="blockType" id="wall" value="WALL" />
+                <div class="block wall"></div>
+                <label class="label" for="wall">Wall</label>
+            </div>
+            <div class="radio-wrapper">
+                <input class="radio-input" type="radio" name="blockType" id="eraser" value="ERASER" />
+                <div class="block eraser"></div>
+                <label class="label" for="eraser">Eraser</label>
+            </div>
+            <button class="clear-board">Clear board</button>
+            <button class="start">Start</button>
+        </div>
         <script type="module" src="/src/main.ts"></script>
     </body>
 </html>

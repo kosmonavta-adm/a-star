@@ -14,6 +14,7 @@ export const BLOCK_TYPE = {
     END: 3,
     OPEN_NODES: 4,
     PATH: 5,
+    ERASER: 6,
 } as const;
 
 export const BLOCK_TYPE_COLOR = {
@@ -23,4 +24,5 @@ export const BLOCK_TYPE_COLOR = {
     3: "#001f3f",
     4: "#7FDBFF",
     5: "#0074D9",
+    6: "transparent",
 };

@@ -1,3 +1,4 @@
+import { Graphics } from "pixi.js";
 import { ArrayCoordinates, BlockType } from "./types";
 
 export class NodeElement {
@@ -8,6 +9,7 @@ export class NodeElement {
     position: ArrayCoordinates;
     parent?: NodeElement;
     blockType: BlockType;
+    graphic?: Graphics;
 
     constructor(position: ArrayCoordinates, blockType: BlockType) {
         this.position = position;
