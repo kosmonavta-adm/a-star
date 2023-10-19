@@ -4,33 +4,104 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>A-star</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Tilt+Neon&display=swap" rel="stylesheet" />
         <link rel="stylesheet" href="/src/styles.css" />
     </head>
     <body>
-        <button class="menu-button"></button>
+        <div class="notification-root"></div>
         <div class="menu">
-            <div class="radio-wrapper">
-                <input class="radio-input" type="radio" name="blockType" id="startPosition" value="START" />
-                <div class="block start-position"></div>
-                <label class="label" for="startPosition">Start position</label>
-            </div>
-            <div class="radio-wrapper">
-                <input class="radio-input" type="radio" name="blockType" id="endPosition" value="END" />
-                <div class="block end-position"></div>
-                <label class="label" for="endPosition">End position</label>
-            </div>
-            <div class="radio-wrapper">
-                <input class="radio-input" type="radio" name="blockType" id="wall" value="WALL" />
-                <div class="block wall"></div>
-                <label class="label" for="wall">Wall</label>
-            </div>
-            <div class="radio-wrapper">
-                <input class="radio-input" type="radio" name="blockType" id="eraser" value="ERASER" />
-                <div class="block eraser"></div>
-                <label class="label" for="eraser">Eraser</label>
-            </div>
-            <button class="clear-board">Clear board</button>
-            <button class="start">Start</button>
+            <section class="section">
+                <h2 class="h2">Blocks</h2>
+                <label class="input-wrapper radio-wrapper" for="startPosition">
+                    <input class="radio-input" type="radio" name="blockType" id="startPosition" value="START" />
+                    <div class="block start-position"></div>
+                    <p class="label">Start position</p>
+                </label>
+                <label class="input-wrapper radio-wrapper" for="endPosition">
+                    <input class="radio-input" type="radio" name="blockType" id="endPosition" value="END" />
+                    <div class="block end-position"></div>
+                    <p class="label">End position</p>
+                </label>
+                <label class="input-wrapper radio-wrapper" for="wall">
+                    <input class="radio-input" type="radio" name="blockType" id="wall" value="WALL" />
+                    <div class="block wall"></div>
+                    <p class="label">Wall</p>
+                </label>
+                <label class="input-wrapper radio-wrapper" for="eraser">
+                    <input class="radio-input" type="radio" name="blockType" id="eraser" value="ERASER" />
+                    <div class="block eraser"></div>
+                    <p class="label">Eraser</p>
+                </label>
+            </section>
+            <section class="section">
+                <h2 class="h2">Options</h2>
+
+                <label class="input-wrapper">
+                    <input data-option="blazinglyFast" type="checkbox" />
+                    Make it blazingly fast
+                </label>
+            </section>
+            <button class="button clear-board">Clear board</button>
+            <button class="button start-stop">Start</button>
+        </div>
+        <button class="menu-button">
+            <svg
+                version="1.1"
+                id="Layer_1"
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+                viewBox="0 0 330 330"
+                xml:space="preserve">
+                <g id="XMLID_236_">
+                    <path
+                        id="XMLID_237_"
+                        d="M15,120h300c8.284,0,15-6.716,15-15s-6.716-15-15-15H15c-8.284,0-15,6.716-15,15S6.716,120,15,120z" />
+                    <path
+                        id="XMLID_238_"
+                        d="M315,150H15c-8.284,0-15,6.716-15,15s6.716,15,15,15h300c8.284,0,15-6.716,15-15S323.284,150,315,150z" />
+                    <path
+                        id="XMLID_239_"
+                        d="M315,210H15c-8.284,0-15,6.716-15,15s6.716,15,15,15h300c8.284,0,15-6.716,15-15S323.284,210,315,210z" />
+                </g>
+            </svg>
+        </button>
+        <div class="slowdown-wrapper">
+            <button class="playback-state visible" data-option="pause" aria-label="Pause">
+                <svg
+                    version="1.1"
+                    viewBox="0 0 512 512"
+                    xml:space="preserve"
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink">
+                    <g>
+                        <path
+                            d="M224,435.8V76.1c0-6.7-5.4-12.1-12.2-12.1h-71.6c-6.8,0-12.2,5.4-12.2,12.1v359.7c0,6.7,5.4,12.2,12.2,12.2h71.6   C218.6,448,224,442.6,224,435.8z" />
+                        <path
+                            d="M371.8,64h-71.6c-6.7,0-12.2,5.4-12.2,12.1v359.7c0,6.7,5.4,12.2,12.2,12.2h71.6c6.7,0,12.2-5.4,12.2-12.2V76.1   C384,69.4,378.6,64,371.8,64z" />
+                    </g>
+                </svg>
+            </button>
+            <button class="playback-state hidden" data-option="resume" aria-label="Resume">
+                <svg
+                    version="1.1"
+                    viewBox="0 0 512 512"
+                    xml:space="preserve"
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink">
+                    <path
+                        d="M405.2,232.9L126.8,67.2c-3.4-2-6.9-3.2-10.9-3.2c-10.9,0-19.8,9-19.8,20H96v344h0.1c0,11,8.9,20,19.8,20  c4.1,0,7.5-1.4,11.2-3.4l278.1-165.5c6.6-5.5,10.8-13.8,10.8-23.1C416,246.7,411.8,238.5,405.2,232.9z" />
+                </svg>
+            </button>
+            <button class="playback-state hidden" data-option="reset" aria-label="Reset">
+                <svg viewBox="0 0 1084 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M788.804292 977.500541a503.543363 503.543363 0 0 0 162.507176-119.862595 509.687074 509.687074 0 0 0 103.780528-174.312738 515.047762 515.047762 0 0 0 28.550186-194.068985 514.385205 514.385205 0 0 0-45.53574-190.816432 508.663122 508.663122 0 0 0-118.657945-164.193685A501.676156 501.676156 0 0 0 554.921651 0.530046 503.904757 503.904757 0 0 0 203.585714 166.530704a509.807538 509.807538 0 0 0-94.564962 150.159522L0 290.187944l45.174345 154.014399 45.234577 154.0144 109.382147-116.610042L309.173215 365.056891l-103.057738-24.936238a411.387699 411.387699 0 0 1 69.990118-106.611453 405.846313 405.846313 0 0 1 576.906499-25.960191c166.181356 153.592772 177.625524 415.001647 25.659027 582.869512a406.087243 406.087243 0 0 1-577.026963 25.899958l-66.315938 73.302904a502.097784 502.097784 0 0 0 364.707543 133.836525 499.387323 499.387323 0 0 0 188.768529-45.957367z" />
+                </svg>
+            </button>
+            Slow it down
+            <input data-option="slowdown" type="range" min="0" max="500" value="0" step="5" />
         </div>
         <script type="module" src="/src/main.ts"></script>
     </body>

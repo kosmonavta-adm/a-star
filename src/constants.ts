@@ -12,7 +12,7 @@ export const BLOCK_TYPE = {
     WALL: 1,
     START: 2,
     END: 3,
-    OPEN_NODES: 4,
+    OPEN_NODE: 4,
     PATH: 5,
     ERASER: 6,
 } as const;
@@ -24,5 +24,13 @@ export const BLOCK_TYPE_COLOR = {
     3: "#001f3f",
     4: "#7FDBFF",
     5: "#0074D9",
-    6: "transparent",
+    6: "#1099bb",
+};
+
+export const GAME_STATE = {
+    RUNNING: "RUNNING",
+    DRAWING: "DRAWING",
+    PAUSED: "PAUSED",
+    PATH_FOUND: "PATH_FOUND",
+    PATH_NOT_FOUND: "PATH_NOT_FOUND",
 };

@@ -2,6 +2,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family: "Tilt Neon";
 }
 
 html,
@@ -9,15 +10,50 @@ body {
     display: flex;
 }
 
+.h2 {
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 .menu {
+    --shadow-color: 0deg 0% 0%;
     display: flex;
     flex-direction: column;
     position: absolute;
     padding: 16px;
     bottom: 128px;
     left: 64px;
-    background-color: #ffffff;
+    background-color: #ecfaff;
     gap: 16px;
+    border: 1px solid #bdbdbd;
+    border-radius: 4px;
+    box-shadow: 0.3px 0.5px 0.7px hsl(var(--shadow-color) / 0.08), 1.1px 2.1px 3px -0.5px hsl(var(--shadow-color) / 0.1),
+        2.4px 4.8px 6.8px -1px hsl(var(--shadow-color) / 0.13), 5.5px 11px 15.7px -1.5px hsl(var(--shadow-color) / 0.16);
+    transition: all 0.2s ease-in-out;
+    transition-property: opacity, scale;
+}
+
+.menu:has(:where(.radio-input[value="END"]:checked, .radio-input:disabled)) + .menu-button svg,
+.menu:has(:where(.radio-input[value="WALL"]:checked, .radio-input:disabled)) + .menu-button svg {
+    fill: #fff;
+}
+
+.menu:has(:where(.radio-input:checked, .radio-input:disabled)) + .menu-button {
+    border-color: #001f3f;
+}
+
+.menu:has(:where(.radio-input:checked, .radio-input:disabled)) + .menu-button:hover {
+    border-color: #292929;
+}
+
+.menu > * {
+    user-select: none;
 }
 
 .menu--hidden {
@@ -27,15 +63,77 @@ body {
 }
 
 .menu-button {
+    --shadow-color: 0deg 0% 0%;
     position: absolute;
+    background-color: #ecfaff;
+    border-radius: 4px;
+    cursor: pointer;
     width: 32px;
     height: 32px;
-    background-color: red;
     bottom: 64px;
     left: 64px;
+    border: 1px solid #bdbdbd;
+    box-shadow: 0.5px 0.7px 1.3px hsl(var(--shadow-color) / 0), 1px 1.6px 2.8px hsl(var(--shadow-color) / 0.1),
+        2.3px 3.6px 6.4px hsl(var(--shadow-color) / 0.21);
+    transition: all 0.2s ease-out;
+    transition-property: border-color, scale, box-shadow, background-color;
+    padding: 4px;
+}
+
+.menu-button svg {
+    fill: #424242;
+    transition: all 0.2s ease-out;
+    transition-property: fill;
+}
+
+.menu-button:hover {
+    --shadow-color: 0deg 0% 0%;
+    border-color: #9f9f9f;
+    scale: 0.95;
+    box-shadow: 0.3px 0.5px 0.7px hsl(var(--shadow-color) / 0.07),
+        0.5px 0.9px 1.3px -0.7px hsl(var(--shadow-color) / 0.11),
+        1.1px 2.2px 3.1px -1.5px hsl(var(--shadow-color) / 0.14);
+}
+
+.menu-button:active {
+    border-color: #0e0e0e;
+}
+
+.menu-button--running {
+    background-color: #001f3f;
+}
+
+.button {
+    border: none;
+    cursor: pointer;
+    background-color: #0080ff;
+    color: #fff;
+    padding: 6px 12px;
+    transition: all 0.1s ease-in-out;
+    transition-property: background-color;
+    border-radius: 4px;
+}
+
+.button:disabled {
+    background-color: #e9e9e9;
+    color: #424242;
+    cursor: not-allowed;
+}
+
+.button:not(:disabled):hover {
+    background-color: #001f3f;
 }
 
 .label {
+    color: #1c1c1c;
+}
+
+.input-wrapper {
+    display: flex;
+    width: 200px;
+    gap: 6px;
+    align-items: center;
+    padding: 4px 8px;
     cursor: pointer;
 }
 
@@ -44,17 +142,71 @@ body {
 }
 
 .radio-wrapper {
+    border-radius: 4px;
+    transition: all 0.1s ease-in-out;
+    transition-property: background-color;
+}
+
+.radio-wrapper:has(.radio-input:disabled),
+.input-wrapper:has([type="checkbox"]:disabled) {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.radio-wrapper:not(:has(.radio-input:disabled)):hover {
+    background-color: #d2edff;
+}
+
+.radio-wrapper:not(:has(.radio-input:disabled)):has(.radio-input:checked) {
+    background-color: #badafd;
+}
+
+.slowdown-wrapper {
+    opacity: 0;
+    pointer-events: none;
+    --shadow-color: 0deg 0% 0%;
+    position: absolute;
     display: flex;
-    width: 120px;
+    height: 32px;
+    align-items: center;
+    user-select: none;
     gap: 6px;
+    padding: 4px 8px;
+    bottom: 64px;
+    left: 128px;
+    background-color: #ecfaff;
+    border-radius: 4px;
+    border: 1px solid #bdbdbd;
+    box-shadow: 0.5px 0.7px 1.3px hsl(var(--shadow-color) / 0), 1px 1.6px 2.8px hsl(var(--shadow-color) / 0.1),
+        2.3px 3.6px 6.4px hsl(var(--shadow-color) / 0.21);
 }
 
-.radio-input:checked ~ .block {
-    border: 2px solid red;
+.slowdown-wrapper--visible {
+    opacity: 1;
+    pointer-events: all;
 }
 
-.radio-input:checked ~ .label {
-    font-weight: 700;
+.playback-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    border: none;
+    height: 32px;
+    width: 32px;
+    cursor: pointer;
+}
+
+.playback-state:hover svg {
+    background-color: #d1f3ff;
+}
+
+.playback-state svg {
+    width: 22px;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.1s ease-in-out;
+    transition-property: background-color;
 }
 
 .block {
@@ -76,4 +228,76 @@ body {
 
 .eraser {
     background-color: #1099bb;
+}
+
+.notification {
+    --shadow-color: 0deg 0% 0%;
+    display: flex;
+    position: absolute;
+    top: 64px;
+    height: 96px;
+    width: 384px;
+    background-color: #feda9c;
+    color: #754c00;
+    margin: auto;
+    font-size: 1.125rem;
+    left: 0;
+    right: 0;
+    border-radius: 4px;
+    padding: 32px;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0.3px 0.5px 0.7px hsl(var(--shadow-color) / 0.15),
+        0.9px 1.9px 2.4px -0.8px hsl(var(--shadow-color) / 0.15),
+        2.4px 4.9px 6.1px -1.7px hsl(var(--shadow-color) / 0.15), 6px 12px 15.1px -2.5px hsl(var(--shadow-color) / 0.15);
+    overflow: hidden;
+}
+
+.notification--hidden {
+    animation-name: hide;
+    animation-duration: 0.2s;
+    animation-timing-function: ease-out;
+}
+
+.notification__progressBar {
+    border-radius: 4px 4px 0 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 4px;
+    background-color: #c7a365;
+    animation-name: progress;
+    animation-duration: 3000ms;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+}
+
+@keyframes progress {
+    from {
+        transform: translate(0);
+    }
+    to {
+        transform: translate(-100%);
+    }
+}
+
+@keyframes hide {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+.hidden {
+    opacity: 0;
+    pointer-events: none;
+    display: none;
+}
+
+.visible {
+    opacity: 1;
+    pointer-events: all;
+    display: flex;
 }

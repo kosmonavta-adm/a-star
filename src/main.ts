@@ -1,19 +1,44 @@
 import { Application, Graphics, Container } from "pixi.js";
 
-import { BLOCK_SIZE, BLOCK_TYPE, BLOCK_TYPE_COLOR, MAP_SIZE } from "./constants";
-import { calculateManhattanDistance, convertToArrayIndex, convertToCoordinate } from "./utils";
+import { BLOCK_SIZE, BLOCK_TYPE, BLOCK_TYPE_COLOR, GAME_STATE, MAP_SIZE } from "./constants";
+import {
+    calculateManhattanDistance,
+    checkIsSamePosition,
+    convertToArrayIndex,
+    convertToCoordinate,
+    createNotification,
+    getDistance,
+    sleep,
+} from "./utils";
 import { BlockType, Coordinates, GameMap } from "./types";
 import { NodeElement } from "./node";
 
-let currentBlock: BlockType = BLOCK_TYPE.WALL;
+let currentBlock: BlockType | undefined;
 let currentNode: NodeElement;
 let startNode: NodeElement | undefined;
 let endNode: NodeElement | undefined;
 let prevPosition: Coordinates;
+let timePassed = 0;
+let isBlazinglyFast = false;
+let slowdown = 0;
+
+const blockButtons = document.querySelectorAll<HTMLInputElement>(".radio-input");
+const menuButton = document.querySelector<HTMLButtonElement>(".menu-button");
+const clearBoardButton = document.querySelector<HTMLButtonElement>(".clear-board");
+const startStopButton = document.querySelector<HTMLButtonElement>(".start-stop");
+const menu = document.querySelector<HTMLDivElement>(".menu");
+const blazinglyFastCheckbox = document.querySelector<HTMLInputElement>('[data-option="blazinglyFast"]');
+const slowdownRange = document.querySelector<HTMLInputElement>('[data-option="slowdown"]');
+const slowdownWrapper = document.querySelector<HTMLInputElement>(".slowdown-wrapper");
+const pauseButton = document.querySelector<HTMLInputElement>('[data-option="pause"]');
+const resumeButton = document.querySelector<HTMLInputElement>('[data-option="resume"]');
+const resetButton = document.querySelector<HTMLInputElement>('[data-option="reset"]');
 
 let map = createMap();
 
 const container = new Container();
+
+let currentGameState = GAME_STATE.DRAWING;
 
 function drawGrid() {
     const grid = new Graphics();
@@ -50,12 +75,6 @@ function clearNode(nodeToClear: NodeElement) {
     if (nodeToClear?.graphic?.destroyed === false) {
         nodeToClear.graphic?.destroy(true);
     }
-}
-
-function checkIsSamePosition(prevPosition: Coordinates, currentPosition: Coordinates) {
-    if (prevPosition?.x === currentPosition.x && prevPosition?.y === currentPosition.y) return true;
-
-    return false;
 }
 
 function drawBlock(currentPosition: Coordinates, blockType: BlockType) {
@@ -128,10 +147,13 @@ function createMap(): GameMap {
     return map;
 }
 
-function sleep(ms: number) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
+function clearBoard() {
+    startNode = undefined;
+    endNode = undefined;
+    while (container.children[0]) {
+        container.removeChild(container.children[0]);
+    }
+    map = createMap();
 }
 
 async function aStar() {
@@ -175,28 +197,37 @@ async function aStar() {
         return adjacentNodes;
     };
 
+    const reconstructPath = async (node?: NodeElement) => {
+        isBlazinglyFast === false && (await sleep(slowdown));
+        if (node === undefined) return;
+        if (node.parent !== undefined) {
+            drawBlock(node.position, BLOCK_TYPE.PATH);
+            reconstructPath(node.parent);
+        }
+    };
+
     const open = new Set<NodeElement>();
     const closed = new Set();
 
     if (startNode === undefined) throw new Error("Start node is not defined");
+    drawBlock(startNode?.position, startNode.blockType);
     currentNode = startNode;
 
     open.add(currentNode);
 
     while (open.size) {
+        if (currentGameState === GAME_STATE.PAUSED) {
+            await sleep(100);
+            timePassed += 100;
+            continue;
+        }
         currentNode = nodeWithLowestF(open);
-        await sleep(0);
+
+        isBlazinglyFast === false && (await sleep(slowdown));
 
         if (currentNode?.isGoal) {
-            const reconstructPath = async (node?: NodeElement) => {
-                await sleep(10);
-                if (node === undefined) return;
-                if (node.parent !== undefined) {
-                    drawBlock(node.position, BLOCK_TYPE.PATH);
-                    reconstructPath(node.parent);
-                }
-            };
             reconstructPath(currentNode.parent);
+            currentGameState = GAME_STATE.PATH_FOUND;
             break;
         }
 
@@ -205,7 +236,7 @@ async function aStar() {
 
         let adjacentNodes = getAdjacentNodes(currentNode);
 
-        drawBlock(currentNode?.position, BLOCK_TYPE.OPEN_NODES);
+        currentNode !== startNode && drawBlock(currentNode?.position, BLOCK_TYPE.OPEN_NODE);
 
         adjacentNodes.forEach((node) => {
             if (endNode === undefined) throw new Error("End node is not defined");
@@ -223,48 +254,136 @@ async function aStar() {
             }
         });
     }
+
+    if (currentGameState !== GAME_STATE.PATH_FOUND) {
+        currentGameState = GAME_STATE.PATH_NOT_FOUND;
+        createNotification("Path not found");
+    }
+
+    pauseButton?.classList.remove("visible");
+    pauseButton?.classList.add("hidden");
+
+    resetButton?.classList.remove("hidden");
+    resetButton?.classList.add("visible");
 }
 
-function initGui() {
-    const blockButtons = document.querySelectorAll<HTMLInputElement>(".radio-input");
-    const menuButton = document.querySelector<HTMLButtonElement>(".menu-button");
-    const clearBoardButton = document.querySelector<HTMLButtonElement>(".clear-board");
-    const startButton = document.querySelector<HTMLButtonElement>(".start");
-    const menu = document.querySelector<HTMLDivElement>(".menu");
+function init() {
+    if (startStopButton === null) throw new Error("Start button is not defined");
+    if (menuButton === null) throw new Error("Menu button is not defined");
+    if (menu === null) throw new Error("Menu is not defined");
+    if (clearBoardButton === null) throw new Error("Clear board button is not defined");
+    if (blazinglyFastCheckbox === null) throw new Error("Blazingly fast checkbox is not defined");
+    if (slowdownRange === null) throw new Error("Slowdown range is not defined");
+    if (slowdownWrapper === null) throw new Error("Slowdown range wrapper is not defined");
+    if (pauseButton === null) throw new Error("Pause button is not defined");
+    if (resumeButton === null) throw new Error("Resume button is not defined");
+    if (resetButton === null) throw new Error("Reset button is not defined");
 
     blockButtons.forEach((button) =>
         button?.addEventListener("change", (e) => {
             const { value } = e.target as HTMLInputElement;
             const choosenBlockType = value as keyof typeof BLOCK_TYPE;
             currentBlock = BLOCK_TYPE[choosenBlockType];
+            menuButton.style.backgroundColor = BLOCK_TYPE_COLOR[currentBlock];
         })
     );
 
-    menuButton?.addEventListener("pointerdown", () => {
+    menuButton.addEventListener("click", () => {
         menu?.classList.toggle("menu--hidden");
     });
 
-    startButton?.addEventListener("pointerdown", () => {
-        aStar();
-    });
+    startStopButton.addEventListener("click", () => {
+        switch (currentGameState) {
+            case GAME_STATE.DRAWING: {
+                if (startNode === undefined || endNode === undefined) {
+                    createNotification("Start and end nodes must be present");
+                    return;
+                }
+                currentBlock = undefined;
 
-    clearBoardButton?.addEventListener("pointerdown", () => {
-        startNode = undefined;
-        endNode = undefined;
-        while (container.children[0]) {
-            container.removeChild(container.children[0]);
+                currentGameState = GAME_STATE.RUNNING;
+
+                blockButtons.forEach((item) => {
+                    item.disabled = true;
+                    item.checked = false;
+                });
+
+                slowdownWrapper.classList.add("slowdown-wrapper--visible");
+                menuButton.classList.add("menu-button--running");
+                menuButton.removeAttribute("style");
+
+                blazinglyFastCheckbox.disabled = true;
+                clearBoardButton.disabled = true;
+                startStopButton.disabled = true;
+
+                menu.classList.toggle("menu--hidden");
+
+                aStar();
+
+                break;
+            }
         }
-        map = createMap();
     });
-}
 
-function init() {
+    clearBoardButton.addEventListener("click", () => clearBoard());
+
+    blazinglyFastCheckbox.addEventListener("change", (e) => {
+        const { checked } = e.target as HTMLInputElement;
+        isBlazinglyFast = checked;
+    });
+
+    slowdownRange.addEventListener("input", (e) => {
+        const { value } = e.target as HTMLInputElement;
+        slowdown = Number(value);
+    });
+
+    pauseButton.addEventListener("click", (_) => {
+        currentGameState = GAME_STATE.PAUSED;
+        pauseButton.classList.remove("visible");
+        pauseButton.classList.add("hidden");
+
+        resumeButton.classList.add("visible");
+    });
+
+    resumeButton.addEventListener("click", (_) => {
+        currentGameState = GAME_STATE.RUNNING;
+        resumeButton.classList.remove("visible");
+        resumeButton.classList.add("hidden");
+
+        pauseButton.classList.add("visible");
+    });
+
+    resetButton.addEventListener("click", (_) => {
+        currentGameState = GAME_STATE.DRAWING;
+        currentBlock = undefined;
+
+        clearBoard();
+
+        menuButton.removeAttribute("style");
+
+        clearBoardButton.disabled = false;
+        startStopButton.disabled = false;
+        blazinglyFastCheckbox.disabled = false;
+        blockButtons.forEach((item) => (item.disabled = false));
+
+        slowdownWrapper.classList.remove("slowdown-wrapper--visible");
+        resetButton.classList.remove("visible");
+        menuButton.classList.remove("menu-button--running");
+
+        resetButton.classList.add("hidden");
+        pauseButton.classList.add("visible");
+    });
+
     const gridContainer = new Container();
     const app = new Application<HTMLCanvasElement>({
         background: "#1099bb",
         resizeTo: window,
     });
 
+    const menuButtonPosition: Coordinates = {
+        x: menuButton.offsetWidth / 2 + menuButton.offsetLeft,
+        y: menuButton.offsetHeight / 2 + menuButton.offsetTop,
+    };
     const grid = drawGrid();
 
     gridContainer.addChild(grid);
@@ -278,6 +397,7 @@ function init() {
     let isPointerDown = false;
 
     container.addEventListener("pointerdown", (e) => {
+        if (currentBlock === undefined) return;
         isPointerDown = true;
         const position = e.global;
         const arrayCoordinates = {
@@ -293,27 +413,39 @@ function init() {
     });
 
     container.addEventListener("pointermove", (e) => {
-        if (isPointerDown) {
-            const position = e.global;
-            const arrayCoordinates = {
-                x: convertToArrayIndex(position.x),
-                y: convertToArrayIndex(position.y),
-            };
-            const block = drawBlock(arrayCoordinates, currentBlock);
-            const isBlockUndefined = block === undefined;
+        if (isPointerDown === false || currentBlock === undefined) return;
 
-            if (isBlockUndefined) return;
+        const position = e.global;
 
-            container.addChild(block);
+        const distanceToButton = getDistance(menuButtonPosition, position);
+
+        if (distanceToButton <= 100) {
+            menuButton.style.opacity = `${distanceToButton}%`;
+
+            if (distanceToButton <= 50) {
+                menuButton.style.opacity = `50%`;
+            }
         }
+
+        const arrayCoordinates = {
+            x: convertToArrayIndex(position.x),
+            y: convertToArrayIndex(position.y),
+        };
+        const block = drawBlock(arrayCoordinates, currentBlock);
+        const isBlockUndefined = block === undefined;
+
+        if (isBlockUndefined) return;
+
+        container.addChild(block);
     });
 
     container.addEventListener("pointerup", () => {
         isPointerDown = false;
+
+        menuButton.style.removeProperty("opacity");
     });
 
     document.body.appendChild(app.view);
 }
 
-initGui();
 init();
